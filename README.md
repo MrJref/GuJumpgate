@@ -56,7 +56,54 @@
 
 先到本仓库的 [Releases](https://github.com/FoundZiGu/GuJumpgate/releases) 页面下载扩展压缩包并解压。
 
-如果需要把扩展和浏览器一起跑在 Docker 远程桌面里，可参考 [Docker Remote Desktop Runtime](docs/docker-desktop-runtime.md)。该方式会在容器内启动 Chromium、VNC/noVNC 和本地 Hotmail Helper，局域网浏览器可通过 noVNC 打开容器桌面操作扩展。
+### Docker 远程桌面部署
+
+如果需要把扩展和浏览器一起跑在 Docker 远程桌面里，可以使用仓库内置的 Docker 运行环境。该方式会在容器内启动 Chromium、VNC/noVNC 和本地 Hotmail Helper，局域网浏览器可通过 noVNC 打开容器桌面操作扩展。
+
+先构建镜像：
+
+```bash
+docker build -t gujumpgate-desktop:local .
+```
+
+使用 `docker run` 启动：
+
+```bash
+docker run -d \
+  --name gujumpgate-desktop \
+  --shm-size=2g \
+  -p 6080:6080 \
+  -p 5900:5900 \
+  -e TZ=Asia/Shanghai \
+  -e RESOLUTION=1440x900 \
+  -e VNC_PASSWORD=replace-me \
+  -v "$PWD:/opt/gujumpgate" \
+  -v gujumpgate-chromium:/home/app/.config/chromium-gujumpgate \
+  -v gujumpgate-downloads:/home/app/Downloads \
+  --add-host=host.docker.internal:host-gateway \
+  gujumpgate-desktop:local
+```
+
+使用 `docker compose` 启动：
+
+```bash
+VNC_PASSWORD=replace-me docker compose up -d --build
+```
+
+启动后在局域网浏览器访问：
+
+```text
+http://<宿主机局域网IP>:6080/vnc.html?autoconnect=1&resize=scale
+```
+
+如果使用默认挂载方式，更新扩展代码后重启容器即可：
+
+```bash
+git pull
+docker compose restart
+```
+
+更多参数说明见 [Docker Remote Desktop Runtime](docs/docker-desktop-runtime.md)。
 
 ### 1. 打开扩展开发者模式
 
