@@ -19,14 +19,21 @@ services:
       START_HOTMAIL_HELPER: "1"
       HOTMAIL_HELPER_HOST: "127.0.0.1"
       HOTMAIL_HELPER_PORT: "17373"
+      EXTENSION_DIR: "/opt/gujumpgate-core"
+      GIT_REPO_URL: "${GIT_REPO_URL:-https://github.com/FoundZiGu/GuJumpgate.git}"
+      AUTO_PULL_LATEST_CODE: "${AUTO_PULL_LATEST_CODE:-true}"
+      GLOBAL_PROXY: "${GLOBAL_PROXY:-}"
+      GIT_PROXY: "${GIT_PROXY:-}"
+      CONFIG_PROXY: "${CONFIG_PROXY:-}"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
-      - ./:/opt/gujumpgate
+      - gujumpgate-core:/opt/gujumpgate-core
       - gujumpgate-chromium:/home/app/.config/chromium-gujumpgate
       - gujumpgate-downloads:/home/app/Downloads
     restart: unless-stopped
 
 volumes:
+  gujumpgate-core:
   gujumpgate-chromium:
   gujumpgate-downloads:

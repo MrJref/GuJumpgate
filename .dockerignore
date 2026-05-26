@@ -2,13 +2,10 @@
 .github
 .runtime
 .worktrees
-.omx
-node_modules
+.vscode
+.idea
 release-artifacts
 __pycache__
 *.pyc
-.npm-test.log
-data/account-run-history.txt
-data/account-run-history.json
-data/hotmail-helper-start.log
+*.log
 config.json

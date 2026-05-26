@@ -25,9 +25,9 @@ install -d -o app -g app \
   /home/app/Downloads \
   /tmp/gujumpgate
 
-if [[ -d /opt/gujumpgate ]]; then
-  mkdir -p /opt/gujumpgate/data
-  chown -R app:app /opt/gujumpgate/data 2>/dev/null || true
+if [[ -n "${EXTENSION_DIR:-}" ]]; then
+  mkdir -p "$EXTENSION_DIR"
+  chown -R app:app "$EXTENSION_DIR" 2>/dev/null || true
 fi
 
 chown -R app:app \
@@ -35,6 +35,7 @@ chown -R app:app \
   /home/app/.config/chromium-gujumpgate \
   /home/app/.vnc \
   /home/app/Downloads \
+  "${EXTENSION_DIR:-/opt/gujumpgate-core}" \
   /tmp/gujumpgate
 
 exec gosu app:app "$@"

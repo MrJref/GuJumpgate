@@ -1,19 +1,16 @@
-/docs/md
+.DS_Store
+.vscode/
+.idea/
 
-/_metadata/
-.vscode
+# Local runtime data
+.runtime/
+.worktrees/
+release-artifacts/
 
-/data/account-run-history.txt
-/data/account-run-history.json
-/data/hotmail-helper-start.log
-.npm-test.log
-.omx/
-/node_modules
-/.runtime
-/docs/新步骤顺序
+# Logs and local config
+*.log
+config.json
+
+# Python cache
 __pycache__/
 *.pyc
-.worktrees/
-/release-artifacts/
-# Local exported runtime settings
-/config.json
