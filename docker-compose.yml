@@ -1,0 +1,32 @@
+services:
+  gujumpgate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gujumpgate-desktop:local
+    container_name: gujumpgate-desktop
+    shm_size: "2gb"
+    ports:
+      - "6080:6080"
+      - "5900:5900"
+    environment:
+      TZ: Asia/Shanghai
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      RESOLUTION: "1440x900"
+      VNC_PASSWORD: "${VNC_PASSWORD:-}"
+      START_URL: "chrome://extensions/"
+      START_HOTMAIL_HELPER: "1"
+      HOTMAIL_HELPER_HOST: "127.0.0.1"
+      HOTMAIL_HELPER_PORT: "17373"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./:/opt/gujumpgate
+      - gujumpgate-chromium:/home/app/.config/chromium-gujumpgate
+      - gujumpgate-downloads:/home/app/Downloads
+    restart: unless-stopped
+
+volumes:
+  gujumpgate-chromium:
+  gujumpgate-downloads:

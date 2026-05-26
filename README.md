@@ -56,6 +56,8 @@
 
 先到本仓库的 [Releases](https://github.com/FoundZiGu/GuJumpgate/releases) 页面下载扩展压缩包并解压。
 
+如果需要把扩展和浏览器一起跑在 Docker 远程桌面里，可参考 [Docker Remote Desktop Runtime](docs/docker-desktop-runtime.md)。该方式会在容器内启动 Chromium、VNC/noVNC 和本地 Hotmail Helper，局域网浏览器可通过 noVNC 打开容器桌面操作扩展。
+
 ### 1. 打开扩展开发者模式
 
 打开 `chrome://extensions/`，开启开发者模式。
