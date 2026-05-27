@@ -1,10 +1,7 @@
 services:
   gujumpgate:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: gujumpgate-desktop:local
-    container_name: gujumpgate-desktop
+    image: solar9527/gujumpgate:latest
+    container_name: gujumpgate
     shm_size: "2gb"
     ports:
       - "6080:6080"
