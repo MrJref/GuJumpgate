@@ -1,6 +1,6 @@
 FROM debian:12-slim
 
-ARG VERSION=v0.1.6
+ARG VERSION=v0.1.7
 
 LABEL org.opencontainers.image.version="${VERSION}"
 
@@ -31,6 +31,8 @@ RUN apt-get update \
     xterm \
     xvfb \
   && rm -rf /var/lib/apt/lists/*
+
+RUN printf '{\n  "name": "novnc",\n  "version": "1.3.0"\n}\n' > /usr/share/novnc/package.json
 
 RUN useradd --create-home --shell /bin/bash --uid 1000 app
 

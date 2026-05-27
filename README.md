@@ -1,6 +1,6 @@
 # GuJumpgate Docker Runtime Shell
 
-当前版本：`v0.1.6`
+当前版本：`v0.1.7`
 
 这是 GuJumpgate 的 Docker 运行壳项目，不再维护浏览器扩展业务代码。
 
@@ -48,6 +48,7 @@ VNC_PASSWORD=replace-me docker compose up -d --build
 - `GIT_REPO_URL=https://github.com/FoundZiGu/GuJumpgate.git`
 - `AUTO_PULL_LATEST_CODE=true`
 - 主核项目持久化到 named volume：`gujumpgate-core`
+- `VNC_PASSWORD` 是 x11vnc/RFB 认证密码；noVNC 会把页面输入的密码转发给 x11vnc。标准 VNC 认证只使用前 8 个字符。
 
 ## 访问
 

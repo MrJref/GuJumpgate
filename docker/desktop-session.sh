@@ -288,7 +288,7 @@ start_bg fluxbox
 
 if [[ -n "$VNC_PASSWORD" ]]; then
   x11vnc -storepasswd "$VNC_PASSWORD" "$HOME/.vnc/passwd" >/dev/null
-  start_bg x11vnc -display "$DISPLAY" -rfbport "$VNC_PORT" -forever -shared -repeat -noxdamage -passwdfile "$HOME/.vnc/passwd" -listen 0.0.0.0
+  start_bg x11vnc -display "$DISPLAY" -rfbport "$VNC_PORT" -forever -shared -repeat -noxdamage -rfbauth "$HOME/.vnc/passwd" -listen 0.0.0.0
 else
   start_bg x11vnc -display "$DISPLAY" -rfbport "$VNC_PORT" -forever -shared -repeat -noxdamage -nopw -listen 0.0.0.0
 fi

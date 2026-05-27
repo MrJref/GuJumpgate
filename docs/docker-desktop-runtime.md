@@ -94,7 +94,7 @@ docker compose up -d
 | 变量 | 默认值 | 说明 |
 | --- | --- | --- |
 | `RESOLUTION` | `1440x900` | 远程桌面分辨率 |
-| `VNC_PASSWORD` | 空 | VNC/noVNC 密码；局域网使用建议设置 |
+| `VNC_PASSWORD` | 空 | x11vnc/RFB 认证密码；noVNC 会把页面输入的密码转发给 x11vnc。标准 VNC 认证只使用前 8 个字符 |
 | `START_URL` | `chrome://extensions/` | Chromium 启动后打开的页面 |
 | `START_HOTMAIL_HELPER` | `1` | 是否自动启动主核项目内的 Hotmail Helper |
 | `HOTMAIL_HELPER_HOST` | `127.0.0.1` | helper 监听地址 |
