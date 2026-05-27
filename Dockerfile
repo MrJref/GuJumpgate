@@ -1,6 +1,6 @@
 FROM debian:12-slim
 
-ARG VERSION=v0.1.5
+ARG VERSION=v0.1.6
 
 LABEL org.opencontainers.image.version="${VERSION}"
 
@@ -12,6 +12,7 @@ RUN apt-get update \
     ca-certificates \
     chromium \
     curl \
+    dbus \
     fluxbox \
     fonts-liberation \
     fonts-noto-cjk \
@@ -55,6 +56,8 @@ ENV DISPLAY=:1 \
     GLOBAL_PROXY= \
     GIT_PROXY= \
     CONFIG_PROXY= \
+    CHROMIUM_DISABLE_BACKGROUND_NETWORKING=1 \
+    CHROMIUM_SUPPRESS_NOISY_LOGS=1 \
     START_HOTMAIL_HELPER=1 \
     START_URL=chrome://extensions/
 

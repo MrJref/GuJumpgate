@@ -3,6 +3,7 @@ set -Eeuo pipefail
 
 export HOME="${HOME:-/home/app}"
 export DISPLAY="${DISPLAY:-:1}"
+export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=/tmp/gujumpgate/session_bus_socket}"
 
 EXTENSION_DIR="${EXTENSION_DIR:-/opt/gujumpgate-core}"
 CHROME_USER_DATA_DIR="${CHROME_USER_DATA_DIR:-/home/app/.config/chromium-gujumpgate}"
@@ -17,6 +18,8 @@ START_HOTMAIL_HELPER="${START_HOTMAIL_HELPER:-1}"
 START_URL="${START_URL:-chrome://extensions/}"
 CHROMIUM_BIN="${CHROMIUM_BIN:-chromium}"
 CHROMIUM_EXTRA_ARGS="${CHROMIUM_EXTRA_ARGS:-}"
+CHROMIUM_DISABLE_BACKGROUND_NETWORKING="${CHROMIUM_DISABLE_BACKGROUND_NETWORKING:-1}"
+CHROMIUM_SUPPRESS_NOISY_LOGS="${CHROMIUM_SUPPRESS_NOISY_LOGS:-1}"
 GIT_REPO_URL="${GIT_REPO_URL:-https://github.com/FoundZiGu/GuJumpgate.git}"
 AUTO_PULL_LATEST_CODE="${AUTO_PULL_LATEST_CODE:-true}"
 GLOBAL_PROXY="${GLOBAL_PROXY:-}"
@@ -264,6 +267,13 @@ start_bg() {
   pids+=("$!")
 }
 
+if command -v dbus-daemon >/dev/null 2>&1; then
+  if [[ "$DBUS_SESSION_BUS_ADDRESS" == unix:path=* ]]; then
+    rm -f "${DBUS_SESSION_BUS_ADDRESS#unix:path=}"
+  fi
+  start_bg dbus-daemon --session --nofork --address="$DBUS_SESSION_BUS_ADDRESS"
+fi
+
 echo "Starting Xvfb display $DISPLAY with resolution $RESOLUTION"
 start_bg Xvfb "$DISPLAY" -screen 0 "${RESOLUTION}x24" -nolisten tcp
 
@@ -291,8 +301,22 @@ if [[ "$START_HOTMAIL_HELPER" != "0" && "$START_HOTMAIL_HELPER" != "false" ]]; t
 fi
 
 launch_chromium() {
+  local default_args=()
   local extra_args=()
+  local logging_args=()
   local proxy_args=()
+  if is_truthy "$CHROMIUM_DISABLE_BACKGROUND_NETWORKING"; then
+    default_args=(
+      --disable-background-networking
+      --disable-component-update
+      --disable-domain-reliability
+      --disable-sync
+      --disable-features=MediaRouter,OptimizationHints,OnDeviceModel
+    )
+  fi
+  if is_truthy "$CHROMIUM_SUPPRESS_NOISY_LOGS"; then
+    logging_args=(--disable-logging --log-level=3)
+  fi
   if [[ -n "$CHROMIUM_EXTRA_ARGS" ]]; then
     read -r -a extra_args <<< "$CHROMIUM_EXTRA_ARGS"
   fi
@@ -312,6 +336,8 @@ launch_chromium() {
       --download-default-directory="$DOWNLOAD_DIR" \
       --load-extension="$EXTENSION_DIR" \
       --disable-extensions-except="$EXTENSION_DIR" \
+      "${default_args[@]}" \
+      "${logging_args[@]}" \
       "${proxy_args[@]}" \
       "${extra_args[@]}" \
       --new-window "$START_URL" || true

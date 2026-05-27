@@ -25,6 +25,8 @@ install -d -o app -g app \
   /home/app/Downloads \
   /tmp/gujumpgate
 
+install -d -m 1777 /tmp/.X11-unix
+
 if [[ -n "${EXTENSION_DIR:-}" ]]; then
   mkdir -p "$EXTENSION_DIR"
   chown -R app:app "$EXTENSION_DIR" 2>/dev/null || true
@@ -37,5 +39,14 @@ chown -R app:app \
   /home/app/Downloads \
   "${EXTENSION_DIR:-/opt/gujumpgate-core}" \
   /tmp/gujumpgate
+
+if command -v dbus-daemon >/dev/null 2>&1; then
+  mkdir -p /run/dbus
+  if [[ ! -S /run/dbus/system_bus_socket ]]; then
+    dbus-uuidgen --ensure=/etc/machine-id 2>/dev/null || true
+    dbus-daemon --system --fork --nopidfile >/dev/null 2>&1 || \
+      echo "Unable to start system DBus; Chromium will continue without it." >&2
+  fi
+fi
 
 exec gosu app:app "$@"
