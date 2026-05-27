@@ -1,5 +1,7 @@
 # GuJumpgate Docker Runtime Shell
 
+当前版本：`v0.1.4`
+
 这是 GuJumpgate 的 Docker 运行壳项目，不再维护浏览器扩展业务代码。
 
 主核项目来源：

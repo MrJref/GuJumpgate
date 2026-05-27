@@ -1,5 +1,9 @@
 FROM debian:12-slim
 
+ARG VERSION=v0.1.4
+
+LABEL org.opencontainers.image.version="${VERSION}"
+
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
