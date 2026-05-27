@@ -1,6 +1,6 @@
 FROM debian:12-slim
 
-ARG VERSION=v0.1.4
+ARG VERSION=v0.1.5
 
 LABEL org.opencontainers.image.version="${VERSION}"
 

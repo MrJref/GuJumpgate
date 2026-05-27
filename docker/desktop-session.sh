@@ -176,6 +176,68 @@ apply_runtime_proxy() {
   echo "Using runtime proxy: $EFFECTIVE_CONFIG_PROXY"
 }
 
+chromium_profile_in_use() {
+  local args pid
+
+  while read -r pid args; do
+    if [[ -z "$pid" || "$pid" == "$$" || "$pid" == "$BASHPID" ]]; then
+      continue
+    fi
+    if [[ "$args" == *"--user-data-dir=$CHROME_USER_DATA_DIR"* && "$args" == *chrom* ]]; then
+      return 0
+    fi
+  done < <(ps -eo pid=,args=)
+
+  return 1
+}
+
+cleanup_stale_chromium_singleton_lock() {
+  local lock_path="$CHROME_USER_DATA_DIR/SingletonLock"
+  local socket_path="$CHROME_USER_DATA_DIR/SingletonSocket"
+  local cookie_path="$CHROME_USER_DATA_DIR/SingletonCookie"
+  local current_host lock_host lock_pid lock_target socket_target
+  local stale_lock=false
+
+  if [[ ! -e "$lock_path" && ! -L "$lock_path" && ! -e "$socket_path" && ! -L "$socket_path" ]]; then
+    return 0
+  fi
+
+  if chromium_profile_in_use; then
+    echo "Chromium profile is already in use; keeping existing profile lock."
+    return 0
+  fi
+
+  current_host="$(hostname)"
+  lock_target="$(readlink "$lock_path" 2>/dev/null || true)"
+
+  if [[ -z "$lock_target" ]]; then
+    stale_lock=true
+  elif [[ "$lock_target" =~ ^(.+)-([0-9]+)$ ]]; then
+    lock_host="${BASH_REMATCH[1]}"
+    lock_pid="${BASH_REMATCH[2]}"
+    if [[ "$lock_host" != "$current_host" ]]; then
+      stale_lock=true
+    elif [[ ! -d "/proc/$lock_pid" ]]; then
+      stale_lock=true
+    elif ! tr '\0' ' ' < "/proc/$lock_pid/cmdline" | grep -Fq -- "--user-data-dir=$CHROME_USER_DATA_DIR"; then
+      stale_lock=true
+    fi
+  else
+    stale_lock=true
+  fi
+
+  if [[ "$stale_lock" != true ]]; then
+    return 0
+  fi
+
+  socket_target="$(readlink "$socket_path" 2>/dev/null || true)"
+  echo "Removing stale Chromium profile lock: ${lock_target:-unknown}"
+  rm -f "$lock_path" "$socket_path" "$cookie_path"
+  if [[ "$socket_target" == /tmp/org.chromium.Chromium.*/* ]]; then
+    rm -rf "${socket_target%/*}"
+  fi
+}
+
 maybe_update_extension_code
 apply_runtime_proxy
 
@@ -239,6 +301,8 @@ launch_chromium() {
   fi
 
   while true; do
+    cleanup_stale_chromium_singleton_lock
+
     "$CHROMIUM_BIN" \
       --no-sandbox \
       --disable-dev-shm-usage \
