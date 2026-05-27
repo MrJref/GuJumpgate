@@ -6,6 +6,7 @@ export DISPLAY="${DISPLAY:-:1}"
 export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=/tmp/gujumpgate/session_bus_socket}"
 
 EXTENSION_DIR="${EXTENSION_DIR:-/opt/gujumpgate-core}"
+SHELL_DIR="${SHELL_DIR:-/opt/gujumpgate-shell}"
 CHROME_USER_DATA_DIR="${CHROME_USER_DATA_DIR:-/home/app/.config/chromium-gujumpgate}"
 DOWNLOAD_DIR="${DOWNLOAD_DIR:-/home/app/Downloads}"
 RESOLUTION="${RESOLUTION:-1440x900}"
@@ -49,6 +50,73 @@ git_cmd() {
     args+=(-c "http.proxy=$EFFECTIVE_GIT_PROXY" -c "https.proxy=$EFFECTIVE_GIT_PROXY")
   fi
   "${args[@]}" "$@"
+}
+
+read_version_file() {
+  local version_file="$1"
+  if [[ -f "$version_file" ]]; then
+    sed -n '1{s/^[[:space:]]*//;s/[[:space:]]*$//;p;q;}' "$version_file"
+  fi
+  return 0
+}
+
+read_json_version() {
+  local json_file="$1"
+  if [[ ! -f "$json_file" ]]; then
+    return 0
+  fi
+
+  python3 - "$json_file" <<'PY' 2>/dev/null || true
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as file:
+    value = json.load(file).get("version", "")
+
+if isinstance(value, str):
+    print(value.strip())
+PY
+}
+
+resolve_shell_version() {
+  read_version_file "$SHELL_DIR/VERSION"
+}
+
+resolve_core_version() {
+  local version
+
+  version="$(read_version_file "$EXTENSION_DIR/VERSION")"
+  if [[ -n "$version" ]]; then
+    printf '%s\n' "$version"
+    return 0
+  fi
+
+  version="$(read_json_version "$EXTENSION_DIR/manifest.json")"
+  if [[ -n "$version" ]]; then
+    printf '%s\n' "$version"
+    return 0
+  fi
+
+  version="$(read_json_version "$EXTENSION_DIR/package.json")"
+  if [[ -n "$version" ]]; then
+    printf '%s\n' "$version"
+    return 0
+  fi
+
+  if git_cmd -C "$EXTENSION_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    git_cmd -C "$EXTENSION_DIR" rev-parse --short HEAD 2>/dev/null || true
+  fi
+  return 0
+}
+
+print_startup_versions() {
+  local shell_version core_version
+
+  shell_version="$(resolve_shell_version)"
+  core_version="$(resolve_core_version)"
+
+  echo "GuJumpgate shell version: ${shell_version:-unknown}"
+  echo "GuJumpgate core version: ${core_version:-unknown}"
 }
 
 add_file_repo_safe_directory() {
@@ -248,6 +316,8 @@ if [[ ! -f "$EXTENSION_DIR/manifest.json" ]]; then
   echo "Extension manifest not found: $EXTENSION_DIR/manifest.json" >&2
   exit 1
 fi
+
+print_startup_versions
 
 pids=()
 
